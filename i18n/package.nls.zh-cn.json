@@ -1,0 +1,7 @@
+{
+  "displayName": "随机工具",
+  "description": "九项分类离线开发工具：安全随机生成、编码转换与解析；支持 AI 工具调用，一键复制脱敏提示词。",
+  "command.open": "随机工具：打开",
+  "statusBar.name": "随机工具",
+  "statusBar.tooltip": "打开分类离线工具，快速复制 AI 调用提示词"
+}

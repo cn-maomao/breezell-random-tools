@@ -1,0 +1,164 @@
+[
+  {
+    "name": "rt_password",
+    "displayName": "Generate Password",
+    "description": "Generate unique passwords or username-like strings locally with cryptographic randomness and printable ASCII character rules. Count is 1-100; total lengths include affixes and are 1-128. Generated values are shown only in the plugin panel, never returned to the model, including username mode. Arguments are visible to the model; do not pass secrets in character rules or affixes.",
+    "modes": ["agent", "chat", "entanglement"],
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "count": { "type": "integer", "minimum": 1, "maximum": 100, "default": 1 },
+        "length": { "type": "integer", "minimum": 1, "maximum": 128, "default": 20, "description": "Total fixed length, also the default for omitted minLength/maxLength." },
+        "rangeLength": { "type": "boolean", "default": false },
+        "minLength": { "type": "integer", "minimum": 1, "maximum": 128, "description": "Defaults to length; with rangeLength, must not exceed maxLength." },
+        "maxLength": { "type": "integer", "minimum": 1, "maximum": 128, "description": "Defaults to length; every length in the selected range must be feasible." },
+        "username": { "type": "boolean", "default": false, "description": "Require an ASCII letter first. Generated values still stay in the panel." },
+        "lowercase": { "type": "boolean", "default": true },
+        "uppercase": { "type": "boolean", "default": true },
+        "digits": { "type": "boolean", "default": true },
+        "special": { "type": "boolean", "default": true },
+        "specialChars": { "type": "string", "pattern": "^[\\x21-\\x7e]*$", "default": "!@#$%^&*()-_=+", "description": "Printable ASCII special-character group; used when special is true." },
+        "customOnly": { "type": "boolean", "default": false },
+        "customChars": { "type": "string", "pattern": "^[\\x21-\\x7e]*$", "default": "", "description": "Printable ASCII group replacing all built-in groups when customOnly is true." },
+        "extraChars": { "type": "string", "pattern": "^[\\x21-\\x7e]*$", "default": "", "description": "Additional printable ASCII alphabet characters, not a required group." },
+        "excludeChars": { "type": "string", "pattern": "^[\\x21-\\x7e]*$", "default": "" },
+        "excludeConfusing": { "type": "boolean", "default": false, "description": "Exclude 0, O, 1, l and I." },
+        "requireEach": { "type": "boolean", "default": true, "description": "Require each selected group; affixes may satisfy groups. Empty required groups are rejected." },
+        "prefix": { "type": "string", "pattern": "^[\\x21-\\x7e]*$", "maxLength": 128, "default": "", "description": "Fixed printable ASCII prefix, included in total length and subject to exclusions." },
+        "suffix": { "type": "string", "pattern": "^[\\x21-\\x7e]*$", "maxLength": 128, "default": "", "description": "Fixed printable ASCII suffix, included in total length and subject to exclusions." }
+      }
+    }
+  },
+  {
+    "name": "rt_key",
+    "displayName": "Generate Secret Key",
+    "description": "Generate unique cryptographically random secret keys locally. JWT HMAC minimums are 32 bytes for HS256, 48 for HS384, and 64 for HS512; generic minimum is 16 bytes. Maximum is 128 bytes, count 1-100. Encoded keys are shown only in the plugin panel and never returned to the model. This generates key material, not signed JWT tokens.",
+    "modes": ["agent", "chat", "entanglement"],
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "count": { "type": "integer", "minimum": 1, "maximum": 100, "default": 1 },
+        "purpose": { "type": "string", "enum": ["jwt", "generic"], "default": "jwt" },
+        "algorithm": { "type": "string", "enum": ["HS256", "HS384", "HS512"], "default": "HS256", "description": "HMAC algorithm for jwt purpose; accepted but unused for generic." },
+        "bytes": { "type": "integer", "minimum": 16, "maximum": 128, "description": "Omitted: 32 for generic/HS256, 48 for HS384, 64 for HS512. JWT minimum depends on algorithm." },
+        "encoding": { "type": "string", "enum": ["base64url", "base64", "hex"], "default": "base64url" }
+      },
+      "allOf": [
+        { "if": { "properties": { "purpose": { "const": "jwt" }, "algorithm": { "const": "HS256" } } }, "then": { "properties": { "bytes": { "minimum": 32 } } } },
+        { "if": { "properties": { "purpose": { "const": "jwt" }, "algorithm": { "const": "HS384" } }, "required": ["algorithm"] }, "then": { "properties": { "bytes": { "minimum": 48 } } } },
+        { "if": { "properties": { "purpose": { "const": "jwt" }, "algorithm": { "const": "HS512" } }, "required": ["algorithm"] }, "then": { "properties": { "bytes": { "minimum": 64 } } } }
+      ]
+    }
+  },
+  {
+    "name": "rt_port",
+    "displayName": "Suggest Random Ports",
+    "description": "Sample unique random port numbers locally without replacement from an inclusive range (1-65535), optionally excluding common service ports and a comma-separated exclusion list/ranges. Returns the numbers to the model. Does not bind sockets, inspect the system, or guarantee that a suggested port is unused or unassigned by IANA.",
+    "modes": ["agent", "chat", "entanglement"],
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "count": { "type": "integer", "minimum": 1, "maximum": 100, "default": 1 },
+        "min": { "type": "integer", "minimum": 1, "maximum": 65535, "default": 1024 },
+        "max": { "type": "integer", "minimum": 1, "maximum": 65535, "default": 49151, "description": "Must be at least min and leave enough candidates for count." },
+        "excludeCommon": { "type": "boolean", "default": true },
+        "exclude": { "type": "string", "default": "", "description": "Comma-separated ports or inclusive ranges, e.g. 3000,8080-8090; values must be 1-65535." }
+      }
+    }
+  },
+  {
+    "name": "rt_uuid",
+    "displayName": "Generate UUID v4",
+    "description": "Generate 1-100 unique cryptographically random UUID version 4 values locally in standard hyphenated or compact form, optionally uppercase. Values are returned to the model.",
+    "modes": ["agent", "chat", "entanglement"],
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "count": { "type": "integer", "minimum": 1, "maximum": 100, "default": 1 },
+        "format": { "type": "string", "enum": ["standard", "compact"], "default": "standard" },
+        "uppercase": { "type": "boolean", "default": false }
+      }
+    }
+  },
+  {
+    "name": "rt_hash",
+    "displayName": "Hash Non-sensitive Text",
+    "description": "Hash UTF-8 text locally with SHA-256, SHA-512, SHA-1, or MD5; return a hex or Base64 digest to the model. SHA-1 and MD5 are for compatibility, not security. Input is at most 65536 UTF-8 bytes. Input and output enter the model conversation; use only non-sensitive text, never passwords, credentials, or tokens.",
+    "modes": ["agent", "chat", "entanglement"],
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input": { "type": "string", "maxLength": 65536, "description": "Non-sensitive text, at most 65536 UTF-8 bytes (runtime also checks byte size)." },
+        "algorithm": { "type": "string", "enum": ["sha256", "sha512", "sha1", "md5"], "default": "sha256" },
+        "encoding": { "type": "string", "enum": ["hex", "base64"], "default": "hex" }
+      },
+      "required": ["input"]
+    }
+  },
+  {
+    "name": "rt_timestamp",
+    "displayName": "Convert Timestamp",
+    "description": "Convert an integer Unix timestamp to a date, or a strict ISO 8601 date with explicit timezone to timestamps, locally. Select seconds or milliseconds explicitly. Returns ISO, UTC, seconds and milliseconds in a JSON string inside values. Dates must be within +/-8640000000000000 milliseconds; seconds round down. Input and output enter the model conversation; use only non-sensitive text.",
+    "modes": ["agent", "chat", "entanglement"],
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input": { "type": "string", "maxLength": 65536, "description": "Integer text for toDate, or ISO 8601 with T and Z/explicit timezone for toTimestamp; at most 65536 UTF-8 bytes." },
+        "operation": { "type": "string", "enum": ["toDate", "toTimestamp"] },
+        "unit": { "type": "string", "enum": ["seconds", "milliseconds"] }
+      },
+      "required": ["input", "operation", "unit"]
+    }
+  },
+  {
+    "name": "rt_base64",
+    "displayName": "Convert Base64",
+    "description": "Encode or decode Base64/Base64url locally with UTF-8 text or hexadecimal bytes. Reject invalid encoding, non-canonical trailing bits and invalid UTF-8 instead of silently repairing data. Input limit 65536 UTF-8 bytes; output limit 131072 bytes. Input and output enter the model conversation; encoding is not encryption, use only non-sensitive data.",
+    "modes": ["agent", "chat", "entanglement"],
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input": { "type": "string", "maxLength": 65536, "description": "Non-sensitive text/hex to encode, or Base64 to decode; at most 65536 UTF-8 bytes." },
+        "operation": { "type": "string", "enum": ["encode", "decode"] },
+        "variant": { "type": "string", "enum": ["base64", "base64url"] },
+        "format": { "type": "string", "enum": ["utf8", "hex"], "description": "Input format for encode; output format for decode." }
+      },
+      "required": ["input", "operation", "variant", "format"]
+    }
+  },
+  {
+    "name": "rt_url",
+    "displayName": "Parse Non-sensitive URL",
+    "description": "Parse an absolute HTTP(S) URL locally without network requests; preserve duplicate query entries and return protocol, hostname, port, path, query, fragment, origin and userinfo in a JSON string inside values. Input and all parsed fields enter the model conversation; never provide URLs containing real passwords, access tokens, or other private data. Input limit 65536 UTF-8 bytes.",
+    "modes": ["agent", "chat", "entanglement"],
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input": { "type": "string", "maxLength": 65536, "description": "Non-sensitive absolute HTTP(S) URL; no whitespace or backslashes; at most 65536 UTF-8 bytes." }
+      },
+      "required": ["input"]
+    }
+  },
+  {
+    "name": "rt_jwt",
+    "displayName": "Inspect Sample JWT",
+    "description": "Decode a non-sensitive sample JWT header and payload locally (three Base64url segments). Return the JSON objects with signatureVerified=false in a JSON string inside values. Does not verify signatures, trust claims, authorize, or judge expiration. Input token and decoded output enter the model conversation; never supply real authentication tokens. Input limit 65536 UTF-8 bytes.",
+    "modes": ["agent", "chat", "entanglement"],
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input": { "type": "string", "maxLength": 65536, "description": "Non-sensitive demonstration JWT only, never a real credential; at most 65536 UTF-8 bytes." }
+      },
+      "required": ["input"]
+    }
+  }
+]

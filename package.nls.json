@@ -1,0 +1,7 @@
+{
+  "displayName": "Random Tools",
+  "description": "Nine grouped offline developer tools with secure generators, text converters and optional AI tool calls. Copy safe prompts in one click.",
+  "command.open": "Random Tools: Open",
+  "statusBar.name": "Random Tools",
+  "statusBar.tooltip": "Open grouped offline tools and copy AI tool prompts"
+}

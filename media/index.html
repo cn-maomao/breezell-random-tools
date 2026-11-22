@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="{{lang}}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{cspSource}}; script-src 'nonce-{{nonce}}'; connect-src 'none'; img-src {{cspSource}} data:;">
+  <title>Breezell Random Tools</title>
+  <link rel="stylesheet" href="{{styleUri}}">
+  <script nonce="{{nonce}}" src="{{scriptUri}}" defer></script>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <h1 data-i18n="appTitle">Random Tools</h1>
+      <p class="muted" data-i18n="appDescription">Generate random values and process developer text locally.</p>
+    </header>
+    <p id="host-warning" class="notice" role="alert" hidden data-i18n="hostOnly">Open this page in Breezell to generate and copy results.</p>
+    <div class="tool-navigation field-row">
+      <div class="field">
+        <label for="category-select" data-i18n="labelToolCategory">Tool category</label>
+        <select id="category-select">
+          <option value="generation" data-i18n="toolCategoryGeneration">Random generation</option>
+          <option value="security" data-i18n="toolCategorySecurity">Encoding &amp; security</option>
+          <option value="parsing" data-i18n="toolCategoryParsing">Parsing &amp; time</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="tool-select" data-i18n="labelTool">Tool</label>
+        <select id="tool-select" aria-controls="panel-password panel-key panel-port panel-uuid panel-hash panel-base64 panel-jwt panel-url panel-timestamp">
+          <option value="password" data-i18n="tabPassword">Password</option>
+          <option value="key" data-i18n="tabKey">Key</option>
+          <option value="port" data-i18n="tabPort">Port</option>
+          <option value="uuid" data-i18n="tabUuid">UUID</option>
+        </select>
+      </div>
+    </div>
+    <div class="tool-heading">
+      <h2 id="current-tool-label" data-i18n="tabPassword">Password</h2>
+      <button id="copy-prompt" class="secondary" type="button" data-i18n="copyPrompt" disabled>Copy AI prompt</button>
+    </div>
+    <details id="ai-help" class="advanced ai-help">
+      <summary data-i18n="aiHelpTitle">Use tools with AI</summary>
+      <p class="hint" data-i18n="aiHelpPrompt">Copy a prompt for the current tool, then paste it into the chat yourself. Inputs and results are not included, and nothing is sent automatically.</p>
+      <p class="hint" data-i18n="aiHelpPermission">Enable agent.tools and allow the tool in the host before AI can call it.</p>
+      <p class="hint" data-i18n="aiHelpData">For other tools, parameters, input text and outputs may be visible to the model. Never submit secrets or private data.</p>
+      <p class="hint" data-i18n="aiHelpSecrets">AI-generated passwords and keys are shown only in their tool panel, masked by default; their values are not returned to the model.</p>
+    </details>
+
+    <section id="panel-password" class="panel" role="region" aria-label="Password" data-i18n-aria-label="tabPassword">
+      <form id="password-form">
+        <div class="field">
+          <label for="password-preset" data-i18n="preset">Preset</label>
+          <select id="password-preset" data-parameter>
+            <option value="password" data-i18n="presetPassword">Password</option>
+            <option value="username" data-i18n="presetUsername">Username (starts with a letter)</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="password-length" data-i18n="length">Length</label>
+            <input id="password-length" type="number" min="1" max="128" value="20" required data-parameter aria-describedby="password-length-hint">
+          </div>
+          <div class="field">
+            <label for="password-count" data-i18n="count">Count</label>
+            <input id="password-count" type="number" min="1" max="100" value="1" required data-parameter>
+          </div>
+        </div>
+        <p id="password-length-hint" class="hint" data-i18n="lengthHint">1–128 characters. Prefix and suffix are included.</p>
+        <fieldset>
+          <legend data-i18n="characterGroups">Characters</legend>
+          <div class="check-grid">
+            <label class="check"><input id="password-lowercase" type="checkbox" checked data-parameter><span data-i18n="lowercase">Lowercase (a–z)</span></label>
+            <label class="check"><input id="password-uppercase" type="checkbox" checked data-parameter><span data-i18n="uppercase">Uppercase (A–Z)</span></label>
+            <label class="check"><input id="password-digits" type="checkbox" checked data-parameter><span data-i18n="digits">Digits (0–9)</span></label>
+            <label class="check"><input id="password-special" type="checkbox" checked data-parameter><span data-i18n="special">Symbols</span></label>
+          </div>
+          <label class="check"><input id="password-require-each" type="checkbox" checked data-parameter><span data-i18n="requireEach">Require every selected character group</span></label>
+          <label class="check"><input id="password-exclude-confusing" type="checkbox" data-parameter><span data-i18n="excludeConfusing">Exclude look-alike characters (0, O, 1, l, I)</span></label>
+        </fieldset>
+        <details class="advanced">
+          <summary data-i18n="advanced">Advanced options</summary>
+          <label class="check"><input id="password-range-length" type="checkbox" data-parameter><span data-i18n="rangeLength">Choose a random length in a range</span></label>
+          <div id="password-range-fields" class="field-row" hidden>
+            <div class="field"><label for="password-min-length" data-i18n="minLength">Minimum length</label><input id="password-min-length" type="number" min="1" max="128" value="16" data-parameter disabled></div>
+            <div class="field"><label for="password-max-length" data-i18n="maxLength">Maximum length</label><input id="password-max-length" type="number" min="1" max="128" value="24" data-parameter disabled></div>
+          </div>
+          <div class="field"><label for="password-special-chars" data-i18n="specialChars">Symbol characters</label><input id="password-special-chars" type="text" value="!@#$%^&amp;*()-_=+" data-parameter spellcheck="false" autocomplete="off"></div>
+          <div class="field"><label for="password-extra-chars" data-i18n="extraChars">Additional characters</label><input id="password-extra-chars" type="text" data-parameter spellcheck="false" autocomplete="off"></div>
+          <div class="field"><label for="password-exclude-chars" data-i18n="excludeChars">Characters to exclude</label><input id="password-exclude-chars" type="text" data-parameter spellcheck="false" autocomplete="off"></div>
+          <label class="check"><input id="password-custom-only" type="checkbox" data-parameter><span data-i18n="customOnly">Use only a custom character set</span></label>
+          <div class="field"><label for="password-custom-chars" data-i18n="customChars">Custom character set</label><input id="password-custom-chars" type="text" data-parameter spellcheck="false" autocomplete="off" aria-describedby="password-custom-hint"></div>
+          <p id="password-custom-hint" class="hint" data-i18n="customHint">Custom-only mode replaces the selected groups. Username mode still requires a leading letter.</p>
+          <div class="field-row">
+            <div class="field"><label for="password-prefix" data-i18n="prefix">Prefix</label><input id="password-prefix" type="text" data-parameter spellcheck="false" autocomplete="off"></div>
+            <div class="field"><label for="password-suffix" data-i18n="suffix">Suffix</label><input id="password-suffix" type="text" data-parameter spellcheck="false" autocomplete="off"></div>
+          </div>
+        </details>
+        <button class="primary generate" type="submit" data-i18n="generate" disabled>Generate</button>
+      </form>
+    </section>
+
+    <section id="panel-key" class="panel" role="region" aria-label="Key" data-i18n-aria-label="tabKey" hidden>
+      <form id="key-form">
+        <div class="field">
+          <label for="key-purpose" data-i18n="keyPurpose">Purpose</label>
+          <select id="key-purpose" data-parameter><option value="jwt" data-i18n="purposeJwt">JWT signing secret (HMAC)</option><option value="generic" data-i18n="purposeGeneric">General-purpose random key</option></select>
+        </div>
+        <div id="key-algorithm-field" class="field">
+          <label for="key-algorithm" data-i18n="algorithm">Algorithm</label>
+          <select id="key-algorithm" data-parameter><option value="HS256">HS256</option><option value="HS384">HS384</option><option value="HS512">HS512</option></select>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="key-bytes" data-i18n="keyBytes">Random bytes</label><input id="key-bytes" type="number" min="32" max="128" value="32" required data-parameter aria-describedby="key-bytes-hint"></div>
+          <div class="field"><label for="key-count" data-i18n="count">Count</label><input id="key-count" type="number" min="1" max="100" value="1" required data-parameter></div>
+        </div>
+        <p id="key-bytes-hint" class="hint" data-i18n="keyBytesHint">JWT minimum: HS256 32, HS384 48, HS512 64 bytes. General-purpose: 16–128 bytes.</p>
+        <div class="field">
+          <label for="key-encoding" data-i18n="encoding">Encoding</label>
+          <select id="key-encoding" data-parameter><option value="base64url">Base64url</option><option value="base64">Base64</option><option value="hex" data-i18n="encodingHex">Hexadecimal</option></select>
+        </div>
+        <p class="hint" data-i18n="keyHint">Generates a secret, not a JWT token or an asymmetric key pair.</p>
+        <button class="primary generate" type="submit" data-i18n="generate" disabled>Generate</button>
+      </form>
+    </section>
+
+    <section id="panel-port" class="panel" role="region" aria-label="Port" data-i18n-aria-label="tabPort" hidden>
+      <form id="port-form">
+        <div class="field">
+          <label for="port-preset" data-i18n="preset">Preset</label>
+          <select id="port-preset" data-parameter><option value="general" data-i18n="portGeneral">General (1024–49151)</option><option value="web" data-i18n="portWeb">Web development (8000–9999)</option><option value="docker" data-i18n="portDocker">Docker (8000–8999)</option><option value="micro" data-i18n="portMicro">Microservices (9000–9999)</option><option value="custom" data-i18n="portCustom">Custom range</option></select>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="port-min" data-i18n="minPort">Minimum port</label><input id="port-min" type="number" min="1" max="65535" value="1024" required data-parameter></div>
+          <div class="field"><label for="port-max" data-i18n="maxPort">Maximum port</label><input id="port-max" type="number" min="1" max="65535" value="49151" required data-parameter></div>
+        </div>
+        <div class="field"><label for="port-count" data-i18n="count">Count</label><input id="port-count" type="number" min="1" max="100" value="1" required data-parameter></div>
+        <label class="check"><input id="port-exclude-common" type="checkbox" checked data-parameter><span data-i18n="excludeCommon">Exclude listed common service ports</span></label>
+        <details class="advanced">
+          <summary data-i18n="advanced">Advanced options</summary>
+          <div class="field"><label for="port-exclude" data-i18n="portExclude">Ports to exclude</label><input id="port-exclude" type="text" placeholder="8080, 9000-9010" data-i18n-placeholder="portExcludePlaceholder" data-parameter spellcheck="false" autocomplete="off" aria-describedby="port-exclude-hint"></div>
+          <p id="port-exclude-hint" class="hint" data-i18n="portExcludeHint">Separate individual ports or inclusive ranges with commas.</p>
+        </details>
+        <p class="notice" data-i18n="portSafety">Port numbers are suggestions only. No ports are opened or scanned; availability is not checked.</p>
+        <button class="primary generate" type="submit" data-i18n="generate" disabled>Generate</button>
+      </form>
+      <details class="advanced port-inspector">
+        <summary data-i18n="inspectTitle">Look up a common service port</summary>
+        <form id="inspect-form">
+          <div class="field"><label for="inspect-port" data-i18n="inspectPort">Port number</label><input id="inspect-port" type="number" min="1" max="65535" value="8080" required aria-describedby="inspect-hint"></div>
+          <button id="inspect-button" class="secondary" type="submit" data-i18n="inspect" disabled>Look up</button>
+        </form>
+        <p id="inspect-info" class="hint" role="status" aria-live="polite" hidden></p>
+        <p id="inspect-hint" class="hint" data-i18n="inspectHint">Uses the host's service list only. No match does not mean the port is available.</p>
+      </details>
+    </section>
+
+    <section id="panel-uuid" class="panel" role="region" aria-label="UUID" data-i18n-aria-label="tabUuid" hidden>
+      <form id="uuid-form">
+        <div class="field-row">
+          <div class="field"><label for="uuid-count" data-i18n="count">Count</label><input id="uuid-count" type="number" min="1" max="100" value="1" required data-parameter></div>
+          <div class="field"><label for="uuid-format" data-i18n="format">Format</label><select id="uuid-format" data-parameter><option value="standard" data-i18n="uuidStandard">Standard (with hyphens)</option><option value="compact" data-i18n="uuidCompact">Compact (no hyphens)</option></select></div>
+        </div>
+        <label class="check"><input id="uuid-uppercase" type="checkbox" data-parameter><span data-i18n="uuidUppercase">Uppercase output</span></label>
+        <p class="hint" data-i18n="uuidNotice">Creates UUID v4 identifiers in the host. UUIDs are not passwords or signing secrets.</p>
+        <button class="primary generate" type="submit" data-i18n="run" disabled>Run</button>
+        <button class="secondary clear-tool" type="button" data-i18n="clearTool">Clear input and results</button>
+      </form>
+    </section>
+
+    <section id="panel-hash" class="panel" role="region" aria-label="Hash" data-i18n-aria-label="tabHash" hidden>
+      <form id="hash-form">
+        <div class="field"><label for="hash-input" data-i18n="inputText">Input text</label><textarea id="hash-input" rows="4" maxlength="65536" data-parameter data-tool-input spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="hash-input-hint"></textarea></div>
+        <p id="hash-input-hint" class="hint" data-i18n="toolInputHint">Up to 65,536 characters; the host also limits UTF-8 input to 64 KiB. Input clears on tool switches, sign-out or Clear.</p>
+        <div class="field-row">
+          <div class="field"><label for="hash-algorithm" data-i18n="algorithm">Algorithm</label><select id="hash-algorithm" data-parameter><option value="sha256">SHA-256</option><option value="sha512">SHA-512</option><option value="sha1">SHA-1</option><option value="md5">MD5</option></select></div>
+          <div class="field"><label for="hash-encoding" data-i18n="encoding">Encoding</label><select id="hash-encoding" data-parameter><option value="hex" data-i18n="encodingHex">Hexadecimal</option><option value="base64">Base64</option></select></div>
+        </div>
+        <p class="notice" data-i18n="hashNotice">MD5 and SHA-1 are for compatibility checks only, not security. These digests are not password-storage algorithms.</p>
+        <button class="primary generate" type="submit" data-i18n="digest" disabled>Digest</button>
+        <button class="secondary clear-tool" type="button" data-i18n="clearTool">Clear input and results</button>
+      </form>
+    </section>
+
+    <section id="panel-timestamp" class="panel" role="region" aria-label="Timestamp" data-i18n-aria-label="tabTimestamp" hidden>
+      <form id="timestamp-form">
+        <div class="field-row">
+          <div class="field"><label for="timestamp-operation" data-i18n="operation">Operation</label><select id="timestamp-operation" data-parameter><option value="toDate" data-i18n="timestampToDate">Timestamp to date</option><option value="toTimestamp" data-i18n="timestampToTimestamp">Date to timestamp</option></select></div>
+          <div class="field"><label for="timestamp-unit" data-i18n="timestampUnit">Timestamp unit</label><select id="timestamp-unit" data-parameter><option value="seconds" data-i18n="seconds">Seconds</option><option value="milliseconds" data-i18n="milliseconds">Milliseconds</option></select></div>
+        </div>
+        <div class="field"><label for="timestamp-input" data-i18n="timestampInput">Timestamp or ISO date</label><input id="timestamp-input" type="text" maxlength="65536" required data-parameter data-tool-input placeholder="1767225600 or 2026-01-01T00:00:00Z" data-i18n-placeholder="timestampPlaceholder" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="timestamp-input-hint timestamp-notice"></div>
+        <p id="timestamp-input-hint" class="hint" data-i18n="toolInputHint">Up to 65,536 characters; the host also limits UTF-8 input to 64 KiB. Input clears on tool switches, sign-out or Clear.</p>
+        <p id="timestamp-notice" class="hint" data-i18n="timestampNotice">Dates must include an explicit ISO timezone, such as Z or +08:00. Results show UTC, Unix seconds and milliseconds.</p>
+        <button class="primary generate" type="submit" data-i18n="convert" disabled>Convert</button>
+        <button class="secondary clear-tool" type="button" data-i18n="clearTool">Clear input and results</button>
+      </form>
+    </section>
+
+    <section id="panel-base64" class="panel" role="region" aria-label="Base64" data-i18n-aria-label="tabBase64" hidden>
+      <form id="base64-form">
+        <div class="field-row">
+          <div class="field"><label for="base64-operation" data-i18n="operation">Operation</label><select id="base64-operation" data-parameter><option value="encode" data-i18n="encode">Encode</option><option value="decode" data-i18n="decode">Decode</option></select></div>
+          <div class="field"><label for="base64-variant" data-i18n="base64Variant">Base64 variant</label><select id="base64-variant" data-parameter><option value="base64">Base64</option><option value="base64url">Base64url</option></select></div>
+        </div>
+        <div class="field"><label for="base64-format" data-i18n="base64Format">Unencoded input / decoded output format</label><select id="base64-format" data-parameter><option value="utf8" data-i18n="utf8">UTF-8 text</option><option value="hex" data-i18n="encodingHex">Hexadecimal</option></select></div>
+        <div class="field"><label for="base64-input" data-i18n="inputText">Input text</label><textarea id="base64-input" rows="4" maxlength="65536" data-parameter data-tool-input spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="base64-input-hint"></textarea></div>
+        <p id="base64-input-hint" class="hint" data-i18n="toolInputHint">Up to 65,536 characters; the host also limits UTF-8 input to 64 KiB. Input clears on tool switches, sign-out or Clear.</p>
+        <p class="notice" data-i18n="base64Notice">Base64 is an encoding, not encryption. Decoded data may contain sensitive information.</p>
+        <button class="primary generate" type="submit" data-i18n="convert" disabled>Convert</button>
+        <button class="secondary clear-tool" type="button" data-i18n="clearTool">Clear input and results</button>
+      </form>
+    </section>
+
+    <section id="panel-url" class="panel" role="region" aria-label="URL" data-i18n-aria-label="tabUrl" hidden>
+      <form id="url-form">
+        <div class="field"><label for="url-input" data-i18n="urlInput">Absolute HTTP(S) URL</label><textarea id="url-input" rows="4" maxlength="65536" required data-parameter data-tool-input spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="url-input-hint"></textarea></div>
+        <p id="url-input-hint" class="hint" data-i18n="toolInputHint">Up to 65,536 characters; the host also limits UTF-8 input to 64 KiB. Input clears on tool switches, sign-out or Clear.</p>
+        <p class="notice" data-i18n="urlNotice">Parses HTTP(S) URLs locally without requesting or opening them. Credentials and query parameters may be sensitive.</p>
+        <button class="primary generate" type="submit" data-i18n="run" disabled>Run</button>
+        <button class="secondary clear-tool" type="button" data-i18n="clearTool">Clear input and results</button>
+      </form>
+    </section>
+
+    <section id="panel-jwt" class="panel" role="region" aria-label="JWT decode" data-i18n-aria-label="tabJwt" hidden>
+      <form id="jwt-form">
+        <div class="field"><label for="jwt-input" data-i18n="jwtInput">Three-part JWS token</label><textarea id="jwt-input" rows="4" maxlength="65536" required data-parameter data-tool-input spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="jwt-input-hint jwt-notice"></textarea></div>
+        <p id="jwt-input-hint" class="hint" data-i18n="toolInputHint">Up to 65,536 characters; the host also limits UTF-8 input to 64 KiB. Input clears on tool switches, sign-out or Clear.</p>
+        <p id="jwt-notice" class="notice" data-i18n="jwtNotice">Decoded only, not verified. No signature validation or authorization decision is performed; claims do not prove validity or expiry.</p>
+        <button class="primary generate" type="submit" data-i18n="decode" disabled>Decode</button>
+        <button class="secondary clear-tool" type="button" data-i18n="clearTool">Clear input and results</button>
+      </form>
+    </section>
+
+    <section id="results" class="results" aria-labelledby="results-heading" hidden>
+      <div class="results-header"><h2 id="results-heading" data-i18n="results">Results</h2><span id="stale" class="badge" data-i18n="stale" hidden>Settings changed</span></div>
+      <p id="stale-hint" class="hint" data-i18n="staleHint" hidden>These results use the previous settings. Run the tool again to apply changes.</p>
+      <p id="result-info" class="hint" hidden></p>
+      <div id="result-list" class="result-list"></div>
+      <div class="result-actions"><button id="copy-all" class="secondary" type="button" data-i18n="copyAll" disabled>Copy all</button><button id="clear" class="secondary" type="button" data-i18n="clear" disabled>Clear</button></div>
+      <p class="hint" data-i18n="clipboardWarning">The clipboard may be read by other applications. Clear sensitive values after use.</p>
+    </section>
+    <p id="status" class="status muted" role="status" aria-live="polite" aria-atomic="true" data-i18n="ready">Ready</p>
+    <footer class="footer muted" data-i18n="privacyNote">Inputs and results are not saved. All tools run locally in the Breezell host.</footer>
+  </main>
+</body>
+</html>
